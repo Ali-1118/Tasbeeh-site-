@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>مِسْبَحَة إلكترونية</title>
+  <style>
+    :root{
+      --bg1:#071026;
+      --bg2:#062235;
+      --accent:#d9a441;
+      --card:#0b1724;
+      --muted:rgba(255,255,255,0.75);
+      --glass: rgba(255,255,255,0.03);
+      --glass-2: rgba(255,255,255,0.04);
+      --radius:20px;
+      font-family: "Segoe UI", Tahoma, "Noto Naskh Arabic", "Arial", sans-serif;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      min-height:100%;
+      background: radial-gradient(1200px 600px at 10% 10%, rgba(217,164,65,0.06), transparent 8%),
+                  linear-gradient(180deg,var(--bg1),var(--bg2));
+      color:var(--muted);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:20px;
+    }
+
+    /* container */
+    .wrap{max-width:980px;margin:0 auto;display:grid;gap:18px;grid-template-columns:1fr 360px}
+    @media(max-width:880px){ .wrap{grid-template-columns:1fr;padding:0 12px} }
+
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .brand{display:flex;gap:12px;align-items:center}
+    .logo{width:54px;height:54px;border-radius:12px;background:linear-gradient(135deg,#183a2f,#0f3b5a);display:grid;place-items:center;box-shadow:0 6px 22px rgba(2,6,23,0.6)}
+    .logo svg{filter:drop-shadow(0 2px 6px rgba(0,0,0,0.6))}
+    h1{margin:0;font-size:20px}
+    p.sub{margin:0;color:rgba(255,255,255,0.6);font-size:13px}
+
+    /* main card */
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:var(--radius);
+      padding:18px;
+      box-shadow: 0 6px 18px rgba(2,6,23,0.55);
+      border:1px solid rgba(255,255,255,0.03);
+    }
+
+    .big-circle-wrap{display:grid;place-items:center;padding:12px}
+    .counter-btn{
+      width:260px;height:260px;border-radius:999px;display:grid;place-items:center;position:relative;
+      cursor:pointer;user-select:none;
+      background: radial-gradient(120px 120px at 30% 20%, rgba(255,255,255,0.03), transparent 10%),
+                  linear-gradient(180deg, rgba(217,164,65,0.09) 0%, rgba(10,10,12,0.15) 60%);
+      transition:transform .08s ease, box-shadow .12s ease;
+      box-shadow: inset 0 -10px 30px rgba(0,0,0,0.35),
+                  0 10px 30px rgba(2,6,23,0.6);
+    }
+    .counter-btn:active{ transform:scale(.985) }
+    .counter-inner{width:86%;height:86%;border-radius:999px;display:grid;place-items:center;background:rgba(0,0,0,0.28);backdrop-filter: blur(6px); border:1px solid rgba(255,255,255,0.03)}
+    .count-num{font-size:56px;font-weight:700;letter-spacing:1px;color:var(--accent)}
+    .count-sub{font-size:14px;color:rgba(255,255,255,0.65);margin-top:6px}
+
+    /* progress ring */
+    .ring{
+      position:absolute;inset:0;display:grid;place-items:center;
+      pointer-events:none;
+    }
+    svg.ring-svg{width:100%;height:100%}
+
+    /* small controls */
+    .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center;margin-top:8px}
+    button.btn{background:var(--glass);border:1px solid rgba(255,255,255,0.03);color:var(--muted);padding:8px 12px;border-radius:12px;cursor:pointer}
+    button.btn.warn{background:linear-gradient(90deg,rgba(217,164,65,0.12),rgba(217,164,65,0.04));color:var(--accent);font-weight:600}
+    input[type=number]{width:96px;padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--muted);text-align:center}
+
+    /* right column */
+    .sidebar{display:flex;flex-direction:column;gap:12px}
+    label.small{display:block;font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:6px}
+    select, input[type=text], textarea{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--muted)}
+    .row{display:flex;gap:8px;align-items:center}
+    .spacer{flex:1}
+
+    /* beads decorative */
+    .beads{
+      display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:8px 6px;
+    }
+    .bead{width:10px;height:10px;border-radius:999px;background:rgba(217,164,65,0.85);box-shadow:0 2px 6px rgba(0,0,0,0.45)}
+
+    /* session list */
+    .sessions{max-height:240px;overflow:auto;padding:8px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border:1px solid rgba(255,255,255,0.02)}
+    .session-item{padding:8px;border-radius:8px;border-bottom:1px dashed rgba(255,255,255,0.03);font-size:13px}
+    .muted{color:rgba(255,255,255,0.55);font-size:13px}
+
+    footer.note{text-align:center;color:rgba(255,255,255,0.55);font-size:13px;margin-top:14px}
+    a.link{color:var(--accent);text-decoration:none;font-weight:600}
+
+    /* small */
+    .top-stats{display:flex;gap:8px;align-items:center}
+    .pill{background:var(--glass-2);padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,0.02);font-size:13px}
+  </style>
+</head>
+<body>
+  <div style="max-width:1100px;margin:0 auto;">
+    <header style="margin-bottom:10px">
+      <div class="brand">
+        <div class="logo" aria-hidden>
+          <!-- simple moon-star icon -->
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C12 2 14.5 4.5 14.5 8.2C14.5 12.8 10 17 6.3 17C6.3 17 8.5 19.5 12 20.5C17 22 21 18.5 21 13C21 7.037 15.963 2 10 2C10 2 11.5 2 12 2Z" fill="#f8ecd1"/>
+            <path d="M18.5 6.5L20 7.7L22 8L20.5 9.3L20.9 11.4L19 10.15L17.1 11.4L17.5 9.3L16 8L18 7L18.5 6.5Z" fill="#d9a441"/>
+          </svg>
+        </div>
+        <div>
+          <h1>مِسْبَحَة إلكترونية</h1>
+          <p class="sub">واجهة أنيقة لحساب الذِكر — اضغط على الدائرة للعدّ</p>
+        </div>
+      </div>
+      <div class="top-stats" style="margin-top:8px">
+        <div class="pill">اليوم: <span id="todayTotal">0</span></div>
+        <div class="pill">الجلسة: <span id="sessionTotal">0</span></div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <!-- main left -->
+      <section class="card">
+        <div class="big-circle-wrap">
+          <div id="btn" class="counter-btn" role="button" aria-pressed="false" aria-label="اضغط للعد">
+            <div class="ring" aria-hidden>
+              <svg class="ring-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+                <defs>
+                  <linearGradient id="g" x1="0" x2="1">
+                    <stop offset="0" stop-color="#ffd27a"/>
+                    <stop offset="1" stop-color="#d9a441"/>
+                  </linearGradient>
+                </defs>
+                <!-- background circle -->
+                <circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="8"/>
+                <!-- progress -->
+                <circle id="prog" cx="50" cy="50" r="46" fill="none" stroke="url(#g)" stroke-width="8" stroke-linecap="round"
+                        stroke-dasharray="289" stroke-dashoffset="289" transform="rotate(-90 50 50)"></circle>
+              </svg>
+            </div>
+
+            <div class="counter-inner">
+              <div style="text-align:center">
+                <div class="count-num" id="count">0</div>
+                <div class="count-sub" id="sub">اضغط للعد</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button class="btn" id="dec">إنقاص</button>
+          <button class="btn warn" id="reset">تصفير</button>
+          <button class="btn" id="saveRound">تثبيت الجولة</button>
+          <div class="spacer"></div>
+          <label class="muted">الهدف:</label>
+          <button class="btn" data-target="33">33</button>
+          <button class="btn" data-target="66">66</button>
+          <button class="btn" data-target="99">99</button>
+          <input type="number" id="targetInput" value="33" min="1" />
+        </div>
+
+        <div style="margin-top:12px">
+          <div class="beads" aria-hidden>
+            <!-- decorative beads -->
+            <div class="bead"></div><div class="bead"></div><div class="bead"></div><div class="bead"></div><div class="bead"></div>
+            <div class="bead"></div><div class="bead"></div><div class="bead"></div><div class="bead"></div><div class="bead"></div>
+            <div class="bead"></div><div class="bead"></div><div class="bead"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- right column -->
+      <aside class="sidebar">
+        <div class="card">
+          <label class="small">اختر ذكرًا مُسبقًا</label>
+          <select id="presetSel" aria-label="اختر ذكر">
+            <option>سبحان الله</option>
+            <option>الحمد لله</option>
+            <option>الله أكبر</option>
+            <option>لا إله إلا الله</option>
+            <option>لا حول ولا قوة إلا بالله</option>
+            <option>أستغفر الله</option>
+            <option>اللهم صلِّ وسلم على نبينا محمد</option>
+          </select>
+
+          <label class="small" style="margin-top:10px">أو اكتب ذِكراً مخصّصاً</label>
+          <input type="text" id="customPhrase" placeholder="اكتب هنا..." />
+
+          <div style="display:flex;gap:8px;margin-top:12px;align-items:center">
+            <label class="small" style="margin:0">صوت النقرة</label>
+            <input type="checkbox" id="soundToggle" checked />
+            <div style="flex:1"></div>
+            <label class="small" style="margin:0">اهتزاز</label>
+            <input type="checkbox" id="vibToggle" checked />
+          </div>
+        </div>
+
+        <div class="card">
+          <label class="small">سجل الجولات</label>
+          <div class="sessions" id="sessions">
+            <div class="muted">لا يوجد سجلات بعد — اضغط «تثبيت الجولة» لحفظها.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <label class="small">معلومات</label>
+          <div class="muted">يمكنك إضافة الصفحة إلى الشاشة الرئيسية في هاتفك لاستخدامها كتطبيق. يتم الحفظ تلقائيًا على جهازك.</div>
+          <div style="margin-top:10px">
+            <a class="link" href="#" id="exportBtn">تصدير سجل (JSON)</a>
+          </div>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="note">
+      تم تصميم المسبحة لتكون بسيطة وسلسة — إن أردت تخصيصًا آخر (ألوان، أصوات، نسخة HTML+CSS فقط بدون JS إضافي)، قل لي وسأعدّها لك.
+    </footer>
+  </div>
+
+  <script>
+    // ====== عناصر الواجهة ======
+    const btn = document.getElementById('btn');
+    const countEl = document.getElementById('count');
+    const subEl = document.getElementById('sub');
+    const decBtn = document.getElementById('dec');
+    const resetBtn = document.getElementById('reset');
+    const saveRoundBtn = document.getElementById('saveRound');
+    const sessionsEl = document.getElementById('sessions');
+    const targetInput = document.getElementById('targetInput');
+    const presetSel = document.getElementById('presetSel');
+    const customPhrase = document.getElementById('customPhrase');
+    const soundToggle = document.getElementById('soundToggle');
+    const vibToggle = document.getElementById('vibToggle');
+    const prog = document.getElementById('prog');
+    const todayTotalEl = document.getElementById('todayTotal');
+    const sessionTotalEl = document.getElementById('sessionTotal');
+    const exportBtn = document.getElementById('exportBtn');
+
+    // ====== حالة التطبيق (محلّي) ======
+    const KEY = 'tasbeeh_v1_state';
+    const STATE = {
+      count: 0,
+      target: 33,
+      totalToday: 0,
+      sessions: [],
+      phrase: presetSel.value,
+      custom: '',
+      sound: true,
+      vibrate: true,
+      lastDay: (new Date()).toISOString().slice(0,10)
+    };
+
+    // حاول تحميل الحالة المحفوظة
+    try{
+      const raw = localStorage.getItem(KEY);
+      if(raw){
+        const parsed = JSON.parse(raw);
+        Object.assign(STATE, parsed || {});
+      }
+    }catch(e){ console.warn(e) }
+
+    // مزامنة UI مع الحالة
+    function applyStateToUI(){
+      countEl.textContent = STATE.count;
+      targetInput.value = STATE.target;
+      presetSel.value = STATE.phrase || presetSel.value;
+      customPhrase.value = STATE.custom || '';
+      soundToggle.checked = STATE.sound;
+      vibToggle.checked = STATE.vibrate;
+      todayTotalEl.textContent = STATE.totalToday || 0;
+      sessionTotalEl.textContent = STATE.count || 0;
+      updateProgress();
+      renderSessions();
+    }
+
+    function saveState(){
+      try{ localStorage.setItem(KEY, JSON.stringify(STATE)); }catch(e){ console.warn(e) }
+    }
+
+    // reset daily counter if day changed
+    function ensureDay(){
+      const today = (new Date()).toISOString().slice(0,10);
+      if(STATE.lastDay !== today){
+        STATE.totalToday = 0;
+        STATE.lastDay = today;
+      }
+    }
+
+    ensureDay();
+    applyStateToUI();
+
+    // ====== صوت + اهتزاز ======
+    let audioCtx = null;
+    function playClick(){
+      if(!STATE.sound) return;
+      try{
+        if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const ctx = audioCtx;
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.value = 880;
+        g.gain.value = 0.002;
+        o.connect(g); g.connect(ctx.destination);
+        o.start();
+        g.gain.exponentialRampToValueAtTime(0.00001, ctx.currentTime + 0.06);
+        o.stop(ctx.currentTime + 0.07);
+      }catch(e){ /* ignore */ }
+    }
+    function doVibrate(){
+      if(STATE.vibrate && navigator.vibrate) navigator.vibrate(14);
+    }
+
+    // ====== تحديث شريط التقدّم ======
+    const CIRC = 2 * Math.PI * 46; // r=46
+    function updateProgress(){
+      const t = Math.max(1, STATE.target || 1);
+      const perc = Math.min(1, (STATE.count / t));
+      const offset = Math.round(CIRC * (1 - perc));
+      prog.style.strokeDashoffset = offset;
+      // نص توضيحي
+      subEl.textContent = `${Math.min(STATE.count, STATE.target)}/${STATE.target} • ${Math.round(perc*100)}%`;
+    }
+
+    // ====== أزرار التفاعل ======
+    btn.addEventListener('click', () => {
+      STATE.count = Math.max(0, STATE.count + 1);
+      STATE.totalToday = (STATE.totalToday || 0) + 1;
+      STATE.phrase = presetSel.value;
+      STATE.custom = customPhrase.value || '';
+      applyStateToUI();
+      playClick(); doVibrate(); saveState();
+    });
+
+    decBtn.addEventListener('click', () => {
+      STATE.count = Math.max(0, STATE.count - 1);
+      applyStateToUI(); saveState();
+    });
+
+    resetBtn.addEventListener('click', () => {
+      STATE.count = 0;
+      applyStateToUI(); saveState();
+    });
+
+    // set target via buttons
+    document.querySelectorAll('button[data-target]').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const v = parseInt(b.getAttribute('data-target'),10)||33;
+        STATE.target = v; applyStateToUI(); saveState();
+      });
+    });
+    targetInput.addEventListener('change', ()=>{
+      const v = Math.max(1, parseInt(targetInput.value || '33',10));
+      STATE.target = v; applyStateToUI(); saveState();
+    });
+
+    // toggles
+    soundToggle.addEventListener('change', ()=>{ STATE.sound = soundToggle.checked; saveState(); });
+    vibToggle.addEventListener('change', ()=>{ STATE.vibrate = vibToggle.checked; saveState(); });
+
+    // presets and custom phrase
+    presetSel.addEventListener('change', ()=>{ STATE.phrase = presetSel.value; saveState(); });
+    customPhrase.addEventListener('input', ()=>{ STATE.custom = customPhrase.value; saveState(); });
+
+    // حفظ الجولة (سجل)
+    saveRoundBtn.addEventListener('click', ()=>{
+      const now = new Date();
+      const entry = {
+        id: Math.random().toString(36).slice(2,9),
+        date: now.toISOString(),
+        phrase: (STATE.custom && STATE.custom.trim()) ? STATE.custom.trim() : (STATE.phrase || presetSel.value),
+        target: STATE.target || 33,
+        count: STATE.count || 0
+      };
+      STATE.sessions = STATE.sessions || [];
+      STATE.sessions.unshift(entry);
+      // فقط أبقي أحدث 50
+      if(STATE.sessions.length>50) STATE.sessions = STATE.sessions.slice(0,50);
+      // إعادة التصفير بعد الحفظ
+      STATE.count = 0;
+      applyStateToUI(); saveState();
+    });
+
+    function renderSessions(){
+      sessionsEl.innerHTML = '';
+      if(!STATE.sessions || STATE.sessions.length === 0){
+        sessionsEl.innerHTML = '<div class="muted">لا يوجد سجلات بعد — اضغط «تثبيت الجولة» لحفظها.</div>';
+        return;
+      }
+      for(const s of STATE.sessions){
+        const d = new Date(s.date);
+        const el = document.createElement('div');
+        el.className = 'session-item';
+        el.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-weight:600">'+escapeHtml(s.phrase)+'</div><div class="muted">'+d.toLocaleString('ar-EG')+'</div></div><div class="muted" style="margin-top:6px">الهدف: '+s.target+' • العدّ: '+s.count+' <button data-id="'+s.id+'" style="float:left;margin-left:8px" class="btn smallBtn">حذف</button></div>';
+        sessionsEl.appendChild(el);
+      }
+      // attach delete handlers
+      sessionsEl.querySelectorAll('button[data-id]').forEach(btn=>{
+        btn.addEventListener('click', (ev)=>{
+          const id = btn.getAttribute('data-id');
+          STATE.sessions = STATE.sessions.filter(x=>x.id !== id);
+          renderSessions(); saveState();
+        });
+      });
+    }
+
+    // export JSON
+    exportBtn.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const data = JSON.stringify(STATE.sessions || [], null, 2);
+      const blob = new Blob([data], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'tasbeeh_sessions.json';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),2000);
+    });
+
+    // helper escape
+    function escapeHtml(s){
+      return (''+s).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]});
+    }
+
+    // keyboard support: space to increment
+    window.addEventListener('keydown', (e)=>{
+      if(e.code === 'Space'){ e.preventDefault(); btn.click(); }
+    });
+
+    // init
+    applyStateToUI();
+    renderSessions();
+    saveState();
+  </script>
+</body>
+</html>
